@@ -4,14 +4,88 @@ import Animated, {
 	useAnimatedStyle,
 	useSharedValue,
 	withSpring,
+	withTiming,
+	withDelay,
 	interpolate,
-	Extrapolate
+	Extrapolate,
+	FadeIn,
+	FadeInDown,
+	FadeInUp,
+	SlideInRight,
+	BounceIn
 } from 'react-native-reanimated';
 import Feather from '@react-native-vector-icons/feather';
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '../../theme';
 import Button from '../../components/common/Button';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const OnboardingItem = ({ item, index, currentIndex }) => {
+	const isFirstScreen = index === 0;
+
+	// Shared values to track initial state
+	const iconOpacity = useSharedValue(isFirstScreen && index === 0 ? 0 : index === currentIndex ? 1 : 0);
+	const iconScale = useSharedValue(isFirstScreen && index === 0 ? 0.5 : index === currentIndex ? 1 : 0.5);
+	const titleOpacity = useSharedValue(isFirstScreen && index === 0 ? 0 : index === currentIndex ? 1 : 0);
+	const titleY = useSharedValue(isFirstScreen && index === 0 ? -20 : index === currentIndex ? 0 : -20);
+	const descOpacity = useSharedValue(isFirstScreen && index === 0 ? 0 : index === currentIndex ? 1 : 0);
+	const descY = useSharedValue(isFirstScreen && index === 0 ? 20 : index === currentIndex ? 0 : 20);
+
+	React.useEffect(() => {
+		const isVisible = index === currentIndex;
+		const duration = isFirstScreen ? 800 : 500;
+
+		// Add staggered delays for first screen on mount
+		if (isFirstScreen && index === 0) {
+			// Icon animates first
+			iconOpacity.value = withDelay(200, withTiming(isVisible ? 1 : 0, { duration }));
+			iconScale.value = withDelay(200, withSpring(isVisible ? 1 : 0.5, { damping: 15 }));
+
+			// Title animates second
+			titleOpacity.value = withDelay(500, withTiming(isVisible ? 1 : 0, { duration: 600 }));
+			titleY.value = withDelay(500, withSpring(isVisible ? 0 : -20, { damping: 20 }));
+
+			// Description animates last
+			descOpacity.value = withDelay(800, withTiming(isVisible ? 1 : 0, { duration: 600 }));
+			descY.value = withDelay(800, withSpring(isVisible ? 0 : 20, { damping: 20 }));
+		} else {
+			// Regular animations for other screens
+			iconOpacity.value = withTiming(isVisible ? 1 : 0, { duration });
+			iconScale.value = withSpring(isVisible ? 1 : 0.5, { damping: 15 });
+			titleOpacity.value = withTiming(isVisible ? 1 : 0, { duration: isFirstScreen ? 600 : 400 });
+			titleY.value = withSpring(isVisible ? 0 : -20, { damping: 20 });
+			descOpacity.value = withTiming(isVisible ? 1 : 0, { duration: isFirstScreen ? 600 : 400 });
+			descY.value = withSpring(isVisible ? 0 : 20, { damping: 20 });
+		}
+	}, [currentIndex, index]);
+
+	const iconAnimStyle = useAnimatedStyle(() => ({
+		opacity: iconOpacity.value,
+		transform: [{ scale: iconScale.value }]
+	}));
+
+	const titleAnimStyle = useAnimatedStyle(() => ({
+		opacity: titleOpacity.value,
+		transform: [{ translateY: titleY.value }]
+	}));
+
+	const descAnimStyle = useAnimatedStyle(() => ({
+		opacity: descOpacity.value,
+		transform: [{ translateY: descY.value }]
+	}));
+
+	return (
+		<View style={styles.slide}>
+			<Animated.View style={[styles.iconContainer, iconAnimStyle]}>
+				<View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+					<Feather name={item.icon} size={100} color={colors.textWhite} />
+				</View>
+			</Animated.View>
+			<Animated.Text style={[styles.title, titleAnimStyle]}>{item.title}</Animated.Text>
+			<Animated.Text style={[styles.description, descAnimStyle]}>{item.description}</Animated.Text>
+		</View>
+	);
+};
 
 const onboardingData = [
 	{
@@ -84,17 +158,7 @@ const OnboardingScreen = ({ navigation }) => {
 	};
 
 	const renderItem = ({ item, index }) => {
-		return (
-			<View style={styles.slide}>
-				<View style={styles.iconContainer}>
-					<View style={[styles.iconCircle, { backgroundColor: item.color }]}>
-						<Feather name={item.icon} size={100} color={colors.textWhite} />
-					</View>
-				</View>
-				<Text style={styles.title}>{item.title}</Text>
-				<Text style={styles.description}>{item.description}</Text>
-			</View>
-		);
+		return <OnboardingItem item={item} index={index} currentIndex={currentIndex} />;
 	};
 
 	const Pagination = () => {
@@ -122,7 +186,9 @@ const OnboardingScreen = ({ navigation }) => {
 			<StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
 			<TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-				<Text style={styles.skipText}>Skip</Text>
+				<Animated.Text style={styles.skipText} entering={FadeIn.delay(300)}>
+					Skip
+				</Animated.Text>
 			</TouchableOpacity>
 
 			<FlatList
@@ -141,7 +207,7 @@ const OnboardingScreen = ({ navigation }) => {
 				keyExtractor={item => item.id}
 			/>
 
-			<View style={styles.footer}>
+			<Animated.View style={styles.footer} entering={FadeInUp.delay(800).duration(600)}>
 				<Pagination />
 				<Button
 					title={currentIndex === onboardingData.length - 1 ? 'Get Started' : 'Next'}
@@ -149,7 +215,7 @@ const OnboardingScreen = ({ navigation }) => {
 					fullWidth
 					size="large"
 				/>
-			</View>
+			</Animated.View>
 		</View>
 	);
 };
