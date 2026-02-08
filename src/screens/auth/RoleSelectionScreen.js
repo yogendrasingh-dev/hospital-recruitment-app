@@ -46,58 +46,59 @@ const RoleCard = ({ title, description, icon, color, isSelected, onPress, delay 
 	};
 
 	return (
-		<AnimatedTouchable
-			entering={ZoomIn.delay(delay).duration(600).springify()}
-			onPress={onPress}
-			onPressIn={handlePressIn}
-			onPressOut={handlePressOut}
-			activeOpacity={0.92}
-			style={[styles.card, cardAnimStyle, isSelected && { borderColor: color, borderWidth: 3 }]}
-		>
-			<View style={[styles.cardGradient, { backgroundColor: isSelected ? color : '#FFFFFF' }]}>
-				<Animated.View style={[styles.iconWrapper, iconAnimStyle]}>
-					<View
-						style={[
-							styles.iconCircle,
-							{
-								backgroundColor: isSelected ? 'rgba(255,255,255,0.18)' : color + '15',
-								borderColor: isSelected ? '#fff' : color + '30',
-								borderWidth: isSelected ? 2 : 1
-							}
-						]}
-					>
-						<Feather name={icon} size={32} color={isSelected ? '#fff' : color} />
-					</View>
-				</Animated.View>
-				<View style={{ alignItems: 'center', marginTop: spacing.md }}>
-					<Text
-						style={[
-							styles.cardTitle,
-							{ color: isSelected ? '#fff' : colors.textPrimary, fontWeight: '700', fontSize: fontSize.lg }
-						]}
-					>
-						{title}
-					</Text>
-					<Text
-						style={[
-							styles.cardDescription,
-							{
-								color: isSelected ? 'rgba(255,255,255,0.92)' : colors.textSecondary,
-								fontWeight: '500',
-								fontSize: fontSize.base
-							}
-						]}
-					>
-						{description}
-					</Text>
-				</View>
-				{isSelected && (
-					<Animated.View entering={ZoomIn.duration(300)} style={styles.checkmark}>
-						<Feather name="check-circle" size={22} color={'#fff'} />
+		<Animated.View entering={ZoomIn.delay(delay).duration(600).springify()}>
+			<AnimatedTouchable
+				onPress={onPress}
+				onPressIn={handlePressIn}
+				onPressOut={handlePressOut}
+				activeOpacity={0.92}
+				style={[styles.card, cardAnimStyle, isSelected && { borderColor: color, borderWidth: 3 }]}
+			>
+				<View style={[styles.cardGradient, { backgroundColor: isSelected ? color : '#FFFFFF' }]}>
+					<Animated.View style={[styles.iconWrapper, iconAnimStyle]}>
+						<View
+							style={[
+								styles.iconCircle,
+								{
+									backgroundColor: isSelected ? 'rgba(255,255,255,0.18)' : color + '15',
+									borderColor: isSelected ? '#fff' : color + '30',
+									borderWidth: isSelected ? 2 : 1
+								}
+							]}
+						>
+							<Feather name={icon} size={32} color={isSelected ? '#fff' : color} />
+						</View>
 					</Animated.View>
-				)}
-			</View>
-		</AnimatedTouchable>
+					<View style={{ alignItems: 'center', marginTop: spacing.md }}>
+						<Text
+							style={[
+								styles.cardTitle,
+								{ color: isSelected ? '#fff' : colors.textPrimary, fontWeight: '700', fontSize: fontSize.lg }
+							]}
+						>
+							{title}
+						</Text>
+						<Text
+							style={[
+								styles.cardDescription,
+								{
+									color: isSelected ? 'rgba(255,255,255,0.92)' : colors.textSecondary,
+									fontWeight: '500',
+									fontSize: fontSize.base
+								}
+							]}
+						>
+							{description}
+						</Text>
+					</View>
+					{isSelected && (
+						<Animated.View entering={ZoomIn.duration(300)} style={styles.checkmark}>
+							<Feather name="check-circle" size={22} color={'#fff'} />
+						</Animated.View>
+					)}
+				</View>
+			</AnimatedTouchable>
+		</Animated.View>
 	);
 };
 
